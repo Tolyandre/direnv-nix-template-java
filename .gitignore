@@ -22,3 +22,20 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# Maven build output
+target/
+
+# Nix / direnv
+.direnv/
+result
+
+# Nix toolchain symlinks (see flake.nix shellHook)
+/.nix-tools/
+
+# IntelliJ IDEA (project SDK is configured per-machine; see README)
+.idea/
+*.iml
+
+# claude code
+.claude/settings.local.json

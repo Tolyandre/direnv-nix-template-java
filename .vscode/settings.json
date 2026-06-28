@@ -1,0 +1,8 @@
+{
+  // JAVA_HOME + Maven come from the Nix dev shell via direnv (the "mkhl.direnv"
+  // extension loads that environment into VSCode), so the Java extension
+  // auto-detects them and never downloads its own JDK/Maven.
+  "maven.executable.preferMavenWrapper": false,
+  "java.import.gradle.enabled": false,
+  "java.import.maven.enabled": true
+}
