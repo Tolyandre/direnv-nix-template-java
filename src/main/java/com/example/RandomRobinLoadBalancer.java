@@ -1,13 +1,13 @@
 package com.example;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Selects a managed {@link Resource} at random on each call.
  */
 public class RandomRobinLoadBalancer implements LoadBalancer {
-    private List<Resource> resources = new ArrayList<>();
+    private CopyOnWriteArrayList<Resource> resources = new CopyOnWriteArrayList<>();
 
     @Override
     public void add(Resource resource) {
@@ -23,7 +23,7 @@ public class RandomRobinLoadBalancer implements LoadBalancer {
             return null;
         }
 
-        int index = (int) (Math.random() * resources.size());
+        int index = (int) (ThreadLocalRandom.current().nextDouble() * resources.size());
         return resources.get(index);
     }
 }
