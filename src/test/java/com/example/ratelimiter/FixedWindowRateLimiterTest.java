@@ -52,9 +52,10 @@ class FixedWindowRateLimiterTest {
 
     @Test
     void allowRequestsWithinLimit() {
-
         // Act & Assert
-        exhaustBudget("client-1");
+        assertTrue(limiter.tryAcquire("client-1"));
+        assertTrue(limiter.tryAcquire("client-1"));
+        assertTrue(limiter.tryAcquire("client-1"));
     }
 
     @Test
@@ -107,5 +108,14 @@ class FixedWindowRateLimiterTest {
         // Act & Assert
         assertThrows(NullPointerException.class,
                 () -> new FixedWindowRateLimiter(3, Duration.ofSeconds(1), null));
+    }
+
+    @Test
+    void differentClientsHaveSeparateBudgets() {
+        // Arrange
+        exhaustBudget("client-1");
+
+        // Act & Assert
+        assertTrue(limiter.tryAcquire("client-2"));
     }
 }

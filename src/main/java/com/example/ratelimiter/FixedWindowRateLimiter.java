@@ -1,6 +1,7 @@
 package com.example.ratelimiter;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.Objects;
 
 /**
@@ -18,12 +19,34 @@ import java.util.Objects;
  */
 public final class FixedWindowRateLimiter implements RateLimiter {
 
+    private final class ClientWindow {
+        private long windowStartTime;
+        private long requestCount;
+
+        ClientWindow(long windowStartTime) {
+            this.windowStartTime = windowStartTime;
+            this.requestCount = 0;
+        }
+
+        public boolean tryAcquire(long currentTime) {
+            if (currentTime - windowStartTime >= windowNanos) {
+                requestCount = 0;
+                windowStartTime = currentTime;
+            }
+
+            if (requestCount < maxRequests) {
+                requestCount++;
+                return true;
+            }
+            return false;
+        }
+    }
+
     private final int maxRequests;
     private final long windowNanos;
     private final TimeSource timeSource;
 
-    private int requestCount;
-    private long windowStartTime;
+    private final HashMap<String, ClientWindow> clientWindows;
 
     public FixedWindowRateLimiter(int maxRequests, Duration window, TimeSource timeSource) {
         if (maxRequests <= 0) {
@@ -36,22 +59,19 @@ public final class FixedWindowRateLimiter implements RateLimiter {
         Objects.requireNonNull(window, "window");
         this.windowNanos = window.toNanos();
 
-        this.requestCount = 0;
-        this.windowStartTime = timeSource.nanoTime();
+        this.clientWindows = new HashMap<>();
     }
 
     @Override
     public boolean tryAcquire(String clientId) {
         long currentTime = timeSource.nanoTime();
-        if (currentTime - windowStartTime >= windowNanos) {
-            requestCount = 0;
-            windowStartTime = currentTime;
+        ClientWindow clientWindow = clientWindows.get(clientId);
+
+        if (clientWindow == null) {
+            clientWindow = new ClientWindow(currentTime);
+            clientWindows.put(clientId, clientWindow);
         }
 
-        if (requestCount < maxRequests) {
-            requestCount++;
-            return true;
-        }
-        return false;
+        return clientWindow.tryAcquire(currentTime);
     }
 }
